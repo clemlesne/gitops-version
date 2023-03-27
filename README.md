@@ -14,7 +14,7 @@ Linux:
 
 ```bash
 # Add this repo as a submodule, from the root of your repo
-> git submodule add -b master https://github.com/clemlesne/gitops-version .
+> git submodule add -b master https://github.com/clemlesne/gitops-version ./cicd/version
 ```
 
 ### How to use
