@@ -40,10 +40,12 @@ if [ -z "$repo_path" ]; then
   exit 1
 fi
 
-if [ -z "$(git tag --list --format='%(refname:short)' 'v[0-9].[0-9].[0-9]')" ]; then
-  echo "Error: no tag found, use \"git tag v0.0.0\""
+if [ -z "$(git tag --list --format='%(refname:short)' --merged HEAD 'v[0-9].[0-9].[0-9]')" ]; then
+  echo "Error: no tag found, use 'git tag v0.0.0'"
   exit 1
 fi
+
+# git list ancestor tags plus merged
 
 version_file="${repo_path}/.version.config"
 if [ ! -f $version_file ]; then
@@ -52,17 +54,17 @@ fi
 version_config=$(cat $version_file)
 
 cache_file="${repo_path}/.version.cache"
-latest_tag_raw=$(git describe --tags --abbrev=0 --match "v[0-9].[0-9].[0-9]")
-latest_tag_xyz=${latest_tag_raw:1}
-latest_tag_array=(${latest_tag_xyz//./ })
-latest_tag_x=${latest_tag_array[0]}
-latest_tag_y=${latest_tag_array[1]}
-latest_tag_z=${latest_tag_array[2]}
-count_from_tag=$(git rev-list $latest_tag_raw..HEAD --count)
+latest_tag_raw=$(git describe --all --abbrev=0 --match "v[0-9].[0-9].[0-9]" --candidates=10000)
+[[ $latest_tag_raw =~ ^tags/v([0-9]+).([0-9]+).([0-9]+) ]]
+latest_tag_x=${BASH_REMATCH[1]}
+latest_tag_y=${BASH_REMATCH[2]}
+latest_tag_z=${BASH_REMATCH[3]}
+count_from_tag=$(git rev-list HEAD ^$latest_tag_raw --no-merges --count)
 
 if [ "$count_from_tag" -eq 0 ]; then
   # <version core>
   base_smver="$latest_tag_x.$latest_tag_y.$latest_tag_z"
+
 else
   commit_id=$(git rev-parse --short HEAD)
   prerelease_smver="$count_from_tag.$commit_id"
@@ -89,6 +91,7 @@ fi
 if [ "$metadata" = true ]; then
   if [ "$cache" = true ] && [ -f $cache_file ]; then
     build_date=$(cat "$cache_file")
+
   else
     build_date=$(date -u "+%Y%m%d%H%M%S")
     echo $build_date >"$cache_file"
