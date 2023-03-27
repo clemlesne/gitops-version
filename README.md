@@ -74,4 +74,23 @@ And then, in your CI:
 0.7.3-21.00736a8+20230327092242
 ```
 
+### [Gradle](https://gradle.org) (Java, Kotlin, Groovy, Scala, C/C++, JavaScript)
+
+In your `build.gradle`:
+
+```groovy
+if (project.hasProperty('projVersion')) {
+  project.version = project.projVersion
+} else {
+  project.version = 'unknown'
+}
+```
+
+And then, in your CI:
+
+```bash
+# Build a Gradle project with the version
+❯ gradle -PprojVersion=$(sh ./version.sh -g . -m -c) build
+```
+
 ## [Authors](./AUTHORS.md)
