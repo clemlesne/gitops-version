@@ -9,7 +9,7 @@
 # Parameters:
 #
 #   -m    Displays build metadata (<version core> "+" <build>, or <version core> "-" <pre-release> "+" <build>)
-#   -c    Cache the date contained in the metadata. Data is stored in the ".version-cache-date" file. Alloys re-executing the command multiple times with a reproductible response, like in CI/CD environment.
+#   -c    Cache the date contained in the metadata. Data is stored in the ".version.cache" file. Alloys re-executing the command multiple times with a reproductible response, like in CI/CD environment.
 #
 # Usage:
 #
@@ -19,59 +19,49 @@
 # See: https://semver.org/#backusnaur-form-grammar-for-valid-semver-versions
 ###
 
-$repo_path = $null
-$metadata = $false
-$cache = $false
+param(
+  [string]
+  [Parameter(Mandatory = $true, HelpMessage = "Repository path")]
+  [Alias("g")]
+  $repo_path,
 
-for ($i = 0; $i -lt $args.Length; $i++) {
-  $arg = $args[$i]
-  if ($arg -eq "-g") {
-    $repo_path = $args[$i + 1]
-    $i++
-  }
-  elseif ($arg -eq "-m") {
-    $metadata = $true
-  }
-  elseif ($arg -eq "-c") {
-    $cache = $true
-  }
-  else {
-    throw "Unknown parameter: $arg"
-  }
-}
+  [switch]
+  [Parameter(Mandatory = $false, HelpMessage = "Displays build metadata (<version core> '+' <build>, or <version core> '-' <pre-release> '+' <build>)")]
+  [Alias("m")]
+  $metadata,
 
-if ($null -eq $repo_path) {
-  Write-Output "Error: repo_path is undefined, use -g <path>"
-  exit 1
-}
+  [switch]
+  [Parameter(Mandatory = $false, HelpMessage = "Cache the date contained in the metadata. Data is stored in the '.version.cache' file. Alloys re-executing the command multiple times with a reproductible response, like in CI/CD environment.")]
+  [Alias("c")]
+  $cache
+)
 
-if ($null -eq $(git tag --list --format='%(refname:short)' 'v[0-9].[0-9].[0-9]')) {
-  Write-Output "Error: no tag found, use \"git tag v0.0.0\""
+if ($null -eq $(git tag --list --format='%(refname:short)' --merged HEAD 'v[0-9].[0-9].[0-9]')) {
+  Write-Output "Error: no tag found, use 'git tag v0.0.0'"
   exit 1
 }
 
 $version_file = "${repo_path}/.version.config"
 if (Test-Path $version_file) {
   $version_config = Get-Content $version_file
-}
-else {
+} else {
   $version_config = "patch"
   $version_config | Out-File $version_file
 }
 
 $cache_file = "${repo_path}/.version.cache"
-$latest_tag_raw = $(git describe --tags --abbrev=0 --match "v[0-9].[0-9].[0-9]")
-$latest_tag_xyz = $latest_tag_raw.TrimStart("v")
-$latest_tag_array = $latest_tag_xyz.Split(".")
-$latest_tag_x = [int] $latest_tag_array[0]
-$latest_tag_y = [int] $latest_tag_array[1]
-$latest_tag_z = [int] $latest_tag_array[2]
-$count_from_tag = $(git rev-list $latest_tag_raw..HEAD --count)
+$latest_tag_raw = $(git describe --all --abbrev=0 --match "v[0-9].[0-9].[0-9]" --candidates=10000)
+$latest_tag_matches = Select-String "^tags/v([0-9]+).([0-9]+).([0-9]+)" -inputobject $latest_tag_raw
+$latest_tag_x = [int] $latest_tag_matches.Matches.Groups[1].Value
+$latest_tag_y = [int] $latest_tag_matches.Matches.Groups[2].Value
+$latest_tag_z = [int] $latest_tag_matches.Matches.Groups[3].Value
+$count_from_tag = [int] $(git rev-list HEAD ^$latest_tag_raw --no-merges --count)
 
 if ($count_from_tag -eq 0) {
+  # <version core>
   $base_smver = "$latest_tag_x.$latest_tag_y.$latest_tag_z"
-}
-else {
+
+} else {
   $commit_id = git rev-parse --short HEAD
   $prerelease_smver = "$count_from_tag.$commit_id"
 
@@ -96,20 +86,22 @@ else {
     }
   }
 
+  # <version core> "-" <pre-release>
   $base_smver = "$latest_tag_x.$latest_tag_y.$latest_tag_z-$prerelease_smver"
 }
 
 if ( $metadata -eq $true ) {
   if ( $cache -eq $true -and (Test-Path $cache_file) ) {
     $build_date = Get-Content $cache_file
-  }
-  else {
+
+  } else {
     $build_date = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
     Set-Content $cache_file $build_date
   }
+
   $metadata_smver = $build_date
   Write-Output "$base_smver+$metadata_smver"
-}
-else {
+
+} else {
   Write-Output "$base_smver"
 }
