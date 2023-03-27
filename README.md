@@ -53,4 +53,25 @@ Examples:
 0.7.2
 ```
 
+## Advanced usage
+
+### [Makefile](https://www.gnu.org/software/make/manual/make.html)
+
+In your `Makefile`:
+
+```makefile
+version:
+	@bash ./cicd/version/version.sh -g . -c
+
+version-full:
+	@bash ./cicd/version/version.sh -g . -c -m
+```
+
+And then, in your CI:
+
+```bash
+❯ make version-full
+0.7.3-21.00736a8+20230327092242
+```
+
 ## [Authors](./AUTHORS.md)
