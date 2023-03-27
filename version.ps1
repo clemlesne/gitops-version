@@ -9,7 +9,7 @@
 # Parameters:
 #
 #   -m    Displays build metadata (<version core> "+" <build>, or <version core> "-" <pre-release> "+" <build>)
-#   -c    Cache the date contained in the metadata. Data is stored in the ".version-cache-date" file. Alloys re-executing the command multiple times with a reproductible response, like in CI/CD environment.
+#   -c    Cache the date contained in the metadata. Data is stored in the ".version.cache" file. Alloys re-executing the command multiple times with a reproductible response, like in CI/CD environment.
 #
 # Usage:
 #
@@ -19,31 +19,22 @@
 # See: https://semver.org/#backusnaur-form-grammar-for-valid-semver-versions
 ###
 
-$repo_path = $null
-$metadata = $false
-$cache = $false
+param(
+  [string]
+  [Parameter(Mandatory = $true, HelpMessage = "Repository path")]
+  [Alias("g")]
+  $repo_path,
 
-for ($i = 0; $i -lt $args.Length; $i++) {
-  $arg = $args[$i]
-  if ($arg -eq "-g") {
-    $repo_path = $args[$i + 1]
-    $i++
-  }
-  elseif ($arg -eq "-m") {
-    $metadata = $true
-  }
-  elseif ($arg -eq "-c") {
-    $cache = $true
-  }
-  else {
-    throw "Unknown parameter: $arg"
-  }
-}
+  [switch]
+  [Parameter(Mandatory = $false, HelpMessage = "Displays build metadata (<version core> '+' <build>, or <version core> '-' <pre-release> '+' <build>)")]
+  [Alias("m")]
+  $metadata,
 
-if ($null -eq $repo_path) {
-  Write-Output "Error: repo_path is undefined, use -g <path>"
-  exit 1
-}
+  [switch]
+  [Parameter(Mandatory = $false, HelpMessage = "Cache the date contained in the metadata. Data is stored in the '.version.cache' file. Alloys re-executing the command multiple times with a reproductible response, like in CI/CD environment.")]
+  [Alias("c")]
+  $cache
+)
 
 if ($null -eq $(git tag --list --format='%(refname:short)' 'v[0-9].[0-9].[0-9]')) {
   Write-Output "Error: no tag found, use \"git tag v0.0.0\""
