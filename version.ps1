@@ -36,7 +36,7 @@ param(
   $cache
 )
 
-if ($null -eq $(git tag --list --format='%(refname:short)' --merged HEAD 'v[0-9].[0-9].[0-9]')) {
+if ($null -eq $(git tag --list --format='%(refname:short)' --merged HEAD 'v[0-9]*.[0-9]*.[0-9]*')) {
   Write-Output "Error: no tag found, use 'git tag v0.0.0'"
   exit 1
 }
@@ -50,7 +50,7 @@ if (Test-Path $version_file) {
 }
 
 $cache_file = "${repo_path}/.version.cache"
-$latest_tag_raw = $(git describe --all --abbrev=0 --match "v[0-9].[0-9].[0-9]" --candidates=10000)
+$latest_tag_raw = $(git describe --all --abbrev=0 --match "v[0-9]*.[0-9]*.[0-9]*" --candidates=10000)
 $latest_tag_matches = Select-String "^tags/v([0-9]+).([0-9]+).([0-9]+)" -inputobject $latest_tag_raw
 $latest_tag_x = [int] $latest_tag_matches.Matches.Groups[1].Value
 $latest_tag_y = [int] $latest_tag_matches.Matches.Groups[2].Value
