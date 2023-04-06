@@ -40,7 +40,7 @@ if [ -z "$repo_path" ]; then
   exit 1
 fi
 
-if [ -z "$(git tag --list --format='%(refname:short)' --merged HEAD 'v[0-9].[0-9].[0-9]')" ]; then
+if [ -z "$(git tag --list --format='%(refname:short)' --merged HEAD 'v[0-9]*.[0-9]*.[0-9]*')" ]; then
   echo "Error: no tag found, use 'git tag v0.0.0'"
   exit 1
 fi
@@ -54,7 +54,7 @@ fi
 version_config=$(cat $version_file)
 
 cache_file="${repo_path}/.version.cache"
-latest_tag_raw=$(git describe --all --abbrev=0 --match "v[0-9].[0-9].[0-9]" --candidates=10000)
+latest_tag_raw=$(git describe --all --abbrev=0 --match "v[0-9]*.[0-9]*.[0-9]*" --candidates=10000)
 [[ $latest_tag_raw =~ ^tags/v([0-9]+).([0-9]+).([0-9]+) ]]
 latest_tag_x=${BASH_REMATCH[1]}
 latest_tag_y=${BASH_REMATCH[2]}
