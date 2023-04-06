@@ -15,8 +15,8 @@
 #
 # Usage:
 #
-#   - Without metadata: "bash ./cicd/version.sh"
-#   - With metadata: "bash ./cicd/version.sh -b"
+#   - Without metadata: "sh cicd/version.sh"
+#   - With metadata: "sh cicd/version.sh -b"
 #
 # See: https://semver.org/#backusnaur-form-grammar-for-valid-semver-versions
 ###

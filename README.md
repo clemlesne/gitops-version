@@ -18,13 +18,13 @@ Linux:
 
 ```bash
 # Add this repo as a submodule, from the root of your repo
-❯ git submodule add -b master https://github.com/clemlesne/gitops-version ./cicd/version
+❯ git submodule add -b master https://github.com/clemlesne/gitops-version cicd/version
 ```
 
 ### How to use
 
 ```bash
-❯ sh ./version.sh -g .
+❯ sh version.sh -g .
 0.2.11-44.630dcd2
 ```
 
@@ -37,19 +37,19 @@ Examples:
 
 ```bash
 # Get short version from current commit
-❯ sh ./version.sh -g .
+❯ sh version.sh -g .
 0.2.11-44.630dcd2
 
 # Get long version from current commit
-❯ sh ./version.sh -g . -m
+❯ sh version.sh -g . -m
 0.2.11-44.630dcd2+20230327090732
 
 # Get the long cached version from commit
-❯ sh ./version.sh -g . -m -c
+❯ sh version.sh -g . -m -c
 0.2.11-44.630dcd2+20230327090732
 
 # Get the version from a repo stored in another folder
-❯ sh ./version.sh -g ./my_folder/
+❯ sh version.sh -g my_folder/
 0.7.2
 ```
 
@@ -61,10 +61,10 @@ In your `Makefile`:
 
 ```makefile
 version:
-	@bash ./cicd/version/version.sh -g . -c
+	@bash cicd/version/version.sh -g . -c
 
 version-full:
-	@bash ./cicd/version/version.sh -g . -c -m
+	@bash cicd/version/version.sh -g . -c -m
 ```
 
 And then, in your CI:
@@ -90,7 +90,7 @@ And then, in your CI:
 
 ```bash
 # Build a Gradle project with the version
-❯ gradle -PprojVersion=$(sh ./version.sh -g . -m -c) build
+❯ gradle -PprojVersion=$(sh version.sh -g . -m -c) build
 ```
 
 ## [Authors](./AUTHORS.md)
