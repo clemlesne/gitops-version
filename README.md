@@ -71,6 +71,7 @@ Examples:
 
 In your `Makefile`:
 
+<!-- markdownlint-disable no-hard-tabs -->
 ```makefile
 version:
 	@bash cicd/version/version.sh -g . -c
@@ -78,6 +79,7 @@ version:
 version-full:
 	@bash cicd/version/version.sh -g . -c -m
 ```
+<!-- markdownlint-enable no-hard-tabs -->
 
 And then, in your CI:
 
