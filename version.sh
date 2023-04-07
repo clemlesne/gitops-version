@@ -40,7 +40,7 @@ if [ -z "$repo_path" ]; then
   exit 1
 fi
 
-if [ -z "$(git tag --list --format='%(refname:short)' --merged HEAD 'v[0-9]*.[0-9]*.[0-9]*')" ]; then
+if [ -z "$(git tag --merged HEAD 'v[0-9]*.[0-9]*.[0-9]*')" ]; then
   echo "Error: no tag found, use 'git tag v0.0.0'"
   exit 1
 fi

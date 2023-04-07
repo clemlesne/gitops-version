@@ -36,7 +36,7 @@ param(
   $cache
 )
 
-if ($null -eq $(git tag --list --format='%(refname:short)' --merged HEAD 'v[0-9]*.[0-9]*.[0-9]*')) {
+if ($null -eq $(git tag --merged HEAD 'v[0-9]*.[0-9]*.[0-9]*')) {
   Write-Output "Error: no tag found, use 'git tag v0.0.0'"
   exit 1
 }
