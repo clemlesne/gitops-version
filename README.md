@@ -21,6 +21,18 @@ Linux:
 ❯ git submodule add -b master https://github.com/clemlesne/gitops-version cicd/version
 ```
 
+In GitHub, [Dependabot](https://github.com/dependabot) can automatically create you pull requests for new versions:
+
+```yaml
+# .github/dependabot.yml
+version: 2
+updates:
+  - package-ecosystem: gitsubmodule
+    schedule:
+        interval: daily
+    directory: cicd/version
+```
+
 ### How to use
 
 ```bash
@@ -59,6 +71,7 @@ Examples:
 
 In your `Makefile`:
 
+<!-- markdownlint-disable no-hard-tabs -->
 ```makefile
 version:
 	@bash cicd/version/version.sh -g . -c
@@ -66,6 +79,7 @@ version:
 version-full:
 	@bash cicd/version/version.sh -g . -c -m
 ```
+<!-- markdownlint-enable no-hard-tabs -->
 
 And then, in your CI:
 

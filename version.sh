@@ -40,7 +40,7 @@ if [ -z "$repo_path" ]; then
   exit 1
 fi
 
-if [ -z "$(git tag --list --format='%(refname:short)' --merged HEAD 'v[0-9]*.[0-9]*.[0-9]*')" ]; then
+if [ -z "$(git tag --merged HEAD 'v[0-9]*.[0-9]*.[0-9]*')" ]; then
   echo "Error: no tag found, use 'git tag v0.0.0'"
   exit 1
 fi
@@ -66,7 +66,8 @@ if [ "$count_from_tag" -eq 0 ]; then
   base_smver="$latest_tag_x.$latest_tag_y.$latest_tag_z"
 
 else
-  commit_id=$(git rev-parse --short HEAD)
+  # Remove all the zeros at the leading zeros, as this is not compliant with SmVer
+  commit_id=$(git rev-parse --short HEAD | sed 's/^0*//')
   prerelease_smver="$count_from_tag.$commit_id"
 
   case "${version_config}" in

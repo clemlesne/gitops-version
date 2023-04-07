@@ -36,7 +36,7 @@ param(
   $cache
 )
 
-if ($null -eq $(git tag --list --format='%(refname:short)' --merged HEAD 'v[0-9]*.[0-9]*.[0-9]*')) {
+if ($null -eq $(git tag --merged HEAD 'v[0-9]*.[0-9]*.[0-9]*')) {
   Write-Output "Error: no tag found, use 'git tag v0.0.0'"
   exit 1
 }
@@ -62,7 +62,8 @@ if ($count_from_tag -eq 0) {
   $base_smver = "$latest_tag_x.$latest_tag_y.$latest_tag_z"
 
 } else {
-  $commit_id = git rev-parse --short HEAD
+  # Remove all the zeros at the leading zeros, as this is not compliant with SmVer
+  $commit_id = git rev-parse --short HEAD | ForEach-Object { $_ -replace '^0*', '' }
   $prerelease_smver = "$count_from_tag.$commit_id"
 
   switch ($version_config) {
