@@ -59,7 +59,7 @@ latest_tag_raw=$(git describe --all --abbrev=0 --match "v[0-9]*.[0-9]*.[0-9]*" -
 latest_tag_x=${BASH_REMATCH[1]}
 latest_tag_y=${BASH_REMATCH[2]}
 latest_tag_z=${BASH_REMATCH[3]}
-count_from_tag=$(git rev-list HEAD ^$latest_tag_raw --no-merges --count)
+count_from_tag=$(git rev-list HEAD ^$latest_tag_raw --count --ancestry-path --no-merges)
 
 if [ "$count_from_tag" -eq 0 ]; then
   # <version core>

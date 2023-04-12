@@ -55,7 +55,7 @@ $latest_tag_matches = Select-String "^tags/v([0-9]+).([0-9]+).([0-9]+)" -inputob
 $latest_tag_x = [int] $latest_tag_matches.Matches.Groups[1].Value
 $latest_tag_y = [int] $latest_tag_matches.Matches.Groups[2].Value
 $latest_tag_z = [int] $latest_tag_matches.Matches.Groups[3].Value
-$count_from_tag = [int] $(git rev-list HEAD ^$latest_tag_raw --no-merges --count)
+$count_from_tag = [int] $(git rev-list HEAD ^$latest_tag_raw --count --ancestry-path --no-merges)
 
 if ($count_from_tag -eq 0) {
   # <version core>
