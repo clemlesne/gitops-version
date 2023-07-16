@@ -12,6 +12,7 @@
 #
 #   -m    Displays build metadata (<version core> "+" <build>, or <version core> "-" <pre-release> "+" <build>)
 #   -c    Cache the date contained in the metadata. Data is stored in the ".version-cache-date" file. Alloys re-executing the command multiple times with a reproductible response, like in CI/CD environment.
+#   -w    Compatibility for Windows MSX build, use a 0-65535 numbers for the pre-release tag.
 #
 # Usage:
 #
@@ -21,7 +22,7 @@
 # See: https://semver.org/#backusnaur-form-grammar-for-valid-semver-versions
 ###
 
-while getopts "g:mc" flag; do
+while getopts "g:mcw" flag; do
   case "${flag}" in
   g)
     repo_path=$OPTARG
@@ -31,6 +32,9 @@ while getopts "g:mc" flag; do
     ;;
   c)
     cache=true
+    ;;
+  w)
+    windows=true
     ;;
   esac
 done
@@ -84,6 +88,13 @@ else
     latest_tag_z=$((latest_tag_z + 1))
     ;;
   esac
+
+  # Windows MSX binaries does not support characters in the pre-release tag, only 0-65535 numbers
+  if [ "$windows" = true ]; then
+    hash=$(echo -n "$prerelease_smver" | md5sum | awk '{print $1}')
+    hash=$(echo "$hash" | tr '[:lower:]' '[:upper:]')
+    prerelease_smver=$(echo "ibase=16; $hash % 10000" | bc)
+  fi
 
   # <version core> "-" <pre-release>
   base_smver="$latest_tag_x.$latest_tag_y.$latest_tag_z-$prerelease_smver"
