@@ -10,6 +10,7 @@
 #
 #   -m    Displays build metadata (<version core> "+" <build>, or <version core> "-" <pre-release> "+" <build>)
 #   -c    Cache the date contained in the metadata. Data is stored in the ".version.cache" file. Alloys re-executing the command multiple times with a reproductible response, like in CI/CD environment.
+#   -w    Compatibility for Windows MSX build, use a 0-65535 numbers for the pre-release tag.
 #
 # Usage:
 #
@@ -33,7 +34,12 @@ param(
   [switch]
   [Parameter(Mandatory = $false, HelpMessage = "Cache the date contained in the metadata. Data is stored in the '.version.cache' file. Alloys re-executing the command multiple times with a reproductible response, like in CI/CD environment.")]
   [Alias("c")]
-  $cache
+  $cache,
+
+  [switch]
+  [Parameter(Mandatory = $false, HelpMessage = "Compatibility for Windows MSX build, use a 0-65535 numbers for the pre-release tag.")]
+  [Alias("w")]
+  $windows
 )
 
 if ($null -eq $(git tag --merged HEAD 'v[0-9]*.[0-9]*.[0-9]*')) {
@@ -85,6 +91,34 @@ if ($count_from_tag -eq 0) {
     default {
       throw "Unknown version config: $version_config"
     }
+  }
+
+  # Windows MSX binaries do not support characters in the pre-release tag, only 0-65535 numbers
+  if ($windows -eq $true) {
+    # Generate the MD5 hash of the string
+    $md5 = New-Object -TypeName System.Security.Cryptography.MD5CryptoServiceProvider
+    $utf8 = New-Object -TypeName System.Text.UTF8Encoding
+    $hash = $md5.ComputeHash($utf8.GetBytes($prerelease_smver))
+    $hash_string = [System.BitConverter]::ToString($hash).Replace('-', '').ToUpper()
+
+    # Define a function for calculating the modulo
+    function BigInteger-Modulo {
+        param (
+            [Parameter(Mandatory=$true)] [string] $HexString,
+            [Parameter(Mandatory=$true)] [int] $Modulo
+        )
+
+        $result = 0
+        for ($i = 0; $i -lt $HexString.Length; $i++) {
+            $digit = [Convert]::ToInt32($HexString[$i], 16)
+            $result = ($result * 16 + $digit) % $Modulo
+        }
+
+        return $result
+    }
+
+    # Convert the hexadecimal hash to a decimal number, apply modulo 65536 operation and print the result
+    $prerelease_smver = BigInteger-Modulo -HexString $hash_string -Modulo 65536
   }
 
   # <version core> "-" <pre-release>
